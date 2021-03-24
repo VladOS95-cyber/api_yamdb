@@ -3,11 +3,13 @@ from rest_framework import permissions, viewsets
 
 from .models import Review, Title
 from .permissions import IsOwnerOrReadOnly
-from .serializers import (CommentSerializer, ReviewSerializer)
+from .serializers import (CommentSerializer, ReviewSerializer,
+                            TitleSerializer)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    pass
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

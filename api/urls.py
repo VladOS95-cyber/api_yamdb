@@ -7,14 +7,14 @@ from .views import CommentViewSet, ReviewViewSet, TitleViewSet
 
 router = DefaultRouter()
 
-router.register(r'title', TitleViewSet, basename='title')
+router.register(r'titles', TitleViewSet, basename='titles')
 router.register(
-    r'title/(?P<title_id>\d+)/reviews',
+    r'titles/(?P<title_id>\d+)/reviews',
     ReviewViewSet,
     basename='reviews'
 )
 router.register(
-    r'title/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
     CommentViewSet,
     basename='comments'
 )
