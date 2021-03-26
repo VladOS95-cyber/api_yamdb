@@ -1,7 +1,6 @@
 from rest_framework import serializers
-<<<<<<< HEAD
-
-from .models import Category, Genre, Title
+from .models import Category, Genre, Title, Comment, CustomUser, Review
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -23,10 +22,6 @@ class TitleViewSerializer(serializers.ModelSerializer):
     class Meta:
         fields = "__all__"
         model = Title
-=======
-from rest_framework.validators import UniqueTogetherValidator
-
-from .models import Comment, Review, Title
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -38,6 +33,18 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Title
+
+
+class UserSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field='username'
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = CustomUser
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -61,4 +68,19 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = Comment
         read_only_fields = ('title', )
->>>>>>> 5260237f38ca9122c34ffbd3ee6418828a00326a
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = CustomUser.USERNAME_FIELD
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['password'].required = False
+
+    def validate(self, attrs):
+        attrs['password'] = self.context['request'].data.get('confirmation_code')
+        return super().validate(attrs)
+
+
+class GetOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
