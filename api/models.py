@@ -26,14 +26,14 @@ class CustomUser(AbstractUser):
     )
     bio = models.TextField(blank=True)
 
-    class Meta:
-        ordering = ('id', )
-
     def is_admin(self):
         return self.role == 'admin' or self.is_staff
 
     def is_moderator(self):
         return self.role == 'moderator'
+
+    class Meta:
+        ordering = ('id', )
 
 
 class Category(models.Model):

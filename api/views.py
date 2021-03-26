@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, viewsets, filters, generics
 from .permissions import IsOwnerOrReadOnly
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import CommentSerializer, ReviewSerializer, CategorySerializer, GenreSerializer, TitleViewSerializer, MyTokenObtainPairSerializer, UserSerializer, GetOTPSerializer
 from .models import Category, Genre, Title, Review, CustomUser
 from django.contrib.auth.hashers import make_password
@@ -45,8 +45,24 @@ class MyTokenObtainPairView(TokenObtainPairView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    permission_classes = IsAuthenticatedOrReadOnly
+    permission_classes = [IsAuthenticated]
     lookup_field = 'username'
+
+
+class UserViewMe(generics.RetrieveUpdateAPIView):
+    permission_classes = (IsAuthenticated, )
+
+    def retrieve(self, request, *args, **kwargs):
+        return Response(UserSerializer(instance=request.user).data)
+
+    def update(self, request, *args, **kwargs):
+        if request.data.get('role'):
+            request.data.pop('role')
+        serializer = UserSerializer(request.user, data=request.data,
+                                    partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -68,7 +84,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
     )
- 
+
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, title=title)
