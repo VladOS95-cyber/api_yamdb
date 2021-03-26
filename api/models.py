@@ -1,7 +1,39 @@
-from django.contrib.auth import get_user_model
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
-User = get_user_model()
+
+class CustomUser(AbstractUser):
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+    USER_ROLES = [
+        ('admin', 'Администратор'),
+        ('moderator', 'Модератор'),
+        ('user', 'Пользователь'),
+    ]
+
+    email = models.EmailField(unique=True)
+    confirmation_code = models.CharField(
+        max_length=36,
+        blank=True,
+        null=True,
+        unique=True
+    )
+    role = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        unique=True
+    )
+    bio = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ('id', )
+
+    def is_admin(self):
+        return self.role == 'admin' or self.is_staff
+
+    def is_moderator(self):
+        return self.role == 'moderator'
 
 
 class Category(models.Model):
@@ -20,12 +52,17 @@ class Title(models.Model):
     description = models.CharField(max_length=1000, blank=True)
     rating = models.IntegerField(blank=True, null=True)
     genre = models.ManyToManyField(Genre, verbose_name='Жанр')
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Категория')
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        blank=True, null=True,
+        verbose_name='Категория'
+    )
 
 
 class Review(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='reviews'
+        CustomUser, on_delete=models.CASCADE, related_name='reviews'
     )
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='reviews'
@@ -38,7 +75,7 @@ class Review(models.Model):
 
 class Comment(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='comments'
+        CustomUser, on_delete=models.CASCADE, related_name='comments'
     )
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name='comments'
