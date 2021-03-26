@@ -37,7 +37,6 @@ class TitleSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(
-        many=False,
         read_only=True,
         slug_field='username'
     )
