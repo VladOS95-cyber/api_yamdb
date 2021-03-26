@@ -1,5 +1,4 @@
 from rest_framework import serializers
-<<<<<<< HEAD
 
 from .models import Category, Genre, Title
 
@@ -23,10 +22,6 @@ class TitleViewSerializer(serializers.ModelSerializer):
     class Meta:
         fields = "__all__"
         model = Title
-=======
-from rest_framework.validators import UniqueTogetherValidator
-
-from .models import Comment, Review, Title
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -61,4 +56,3 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = Comment
         read_only_fields = ('title', )
->>>>>>> 5260237f38ca9122c34ffbd3ee6418828a00326a
