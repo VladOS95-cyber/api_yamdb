@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions, viewsets, filters, generics
-from .permissions import IsOwnerOrReadOnly
+from rest_framework import permissions, viewsets, generics, status
+from .permissions import IsOwnerOrReadOnly, IsAdmin
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import CommentSerializer, ReviewSerializer, CategorySerializer, GenreSerializer, TitleViewSerializer, MyTokenObtainPairSerializer, UserSerializer, GetOTPSerializer
 from .models import Category, Genre, Title, Review, CustomUser
@@ -45,24 +45,33 @@ class MyTokenObtainPairView(TokenObtainPairView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdmin]
+    http_method_names = ('get', 'post', 'patch', 'delete',)
     lookup_field = 'username'
 
 
 class UserViewMe(generics.RetrieveUpdateAPIView):
-    permission_classes = (IsAuthenticated, )
 
-    def retrieve(self, request, *args, **kwargs):
-        return Response(UserSerializer(instance=request.user).data)
+    permission_classes = [IsAuthenticated, ]
 
-    def update(self, request, *args, **kwargs):
-        if request.data.get('role'):
-            request.data.pop('role')
-        serializer = UserSerializer(request.user, data=request.data,
-                                    partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
+    def get(self, request):
+        current_user = get_object_or_404(
+            CustomUser, username=request.user.username
+        )
+        serializer = UserSerializer(current_user)
         return Response(serializer.data)
+
+    def patch(self, request):
+        current_user = get_object_or_404(
+            CustomUser, username=request.user.username
+        )
+        serializer = UserSerializer(
+            current_user, data=request.data, partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):

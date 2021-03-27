@@ -5,35 +5,19 @@ from django.contrib.auth.models import AbstractUser
 class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
-    USER_ROLES = [
-        ('admin', 'Администратор'),
-        ('moderator', 'Модератор'),
-        ('user', 'Пользователь'),
+    USER_ROLES_CHOICES = [
+        ('user', 'User'),
+        ('moderator', 'Moderator'),
+        ('admin', 'Admin'),
     ]
 
     email = models.EmailField(unique=True)
-    confirmation_code = models.CharField(
-        max_length=36,
-        blank=True,
-        null=True,
-        unique=True
-    )
     role = models.CharField(
         max_length=20,
-        blank=True,
-        null=True,
-        unique=True
+        choices=USER_ROLES_CHOICES,
+        default='user',
     )
-    bio = models.TextField(blank=True)
-
-    def is_admin(self):
-        return self.role == 'admin' or self.is_staff
-
-    def is_moderator(self):
-        return self.role == 'moderator'
-
-    class Meta:
-        ordering = ('id', )
+    bio = models.TextField(blank=True, null=True)
 
 
 class Category(models.Model):

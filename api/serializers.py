@@ -36,13 +36,11 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='username'
-    )
 
     class Meta:
-        fields = '__all__'
+        fields = [
+            'first_name', 'last_name', 'username', 'bio', 'email', 'role',
+        ]
         model = CustomUser
 
 
@@ -70,7 +68,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = CustomUser.USERNAME_FIELD
+    username_field = CustomUser.USERNAME_FIELD 
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

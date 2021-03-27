@@ -6,3 +6,11 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return obj.author == request.user
+
+
+class IsAdmin(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        if (request.user.role == 'admin'
+                or request.user.is_superuser is True):
+            return True

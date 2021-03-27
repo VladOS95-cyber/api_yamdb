@@ -35,6 +35,6 @@ urlpatterns = [
     ),
     path('v1/api-token-auth/', views.obtain_auth_token),
     path('auth/email/', GetOTPApiView.as_view()),
+    path('v1/users/me/', UserViewMe.as_view()),
     path('v1/', include(router_v1.urls)),
-    path('v1/users/me', UserViewMe.as_view()),
 ]
