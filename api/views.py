@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions, viewsets, generics, status
+from rest_framework import filters, permissions, viewsets, generics, status, mixins
 from .permissions import IsOwnerOrReadOnly, IsAdmin
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .serializers import CommentSerializer, ReviewSerializer, CategorySerializer, GenreSerializer, TitleViewSerializer, MyTokenObtainPairSerializer, UserSerializer, GetOTPSerializer
+from .serializers import CommentSerializer, ReviewSerializer, CategorySerializer, GenreSerializer, TitleSerializer, MyTokenObtainPairSerializer, UserSerializer, GetOTPSerializer
 from .models import Category, Genre, Title, Review, CustomUser
 from django.contrib.auth.hashers import make_password
 from rest_framework.response import Response
@@ -74,7 +74,14 @@ class UserViewMe(generics.RetrieveUpdateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class DeleteViewSet(mixins.DestroyModelMixin,
+                    mixins.ListModelMixin,
+                    mixins.CreateModelMixin,
+                    viewsets.GenericViewSet):
+    pass
+
+
+class CategoryViewSet(DeleteViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (
@@ -82,14 +89,31 @@ class CategoryViewSet(viewsets.ModelViewSet):
     )
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(DeleteViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
+    )
+    filter_backends = [filters.SearchFilter]
+    search_fields = ('name', 'slug')
+    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    serializer_class = TitleViewSerializer
+    serializer_class = TitleSerializer
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
+    )
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
     )
@@ -99,15 +123,8 @@ class TitleViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, title=title)
 
     def get_queryset(self):
-        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-        return title.reviews.all()
-
-
-class ReviewViewSet(viewsets.ModelViewSet):
-    serializer_class = ReviewSerializer
-    permission_classes = (
-        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
-    )
+        review = get_object_or_404(Review, pk=self.kwargs.get('title_id'))
+        return review.comments.all()
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -115,7 +132,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
     )
-
+    
     def perform_create(self, serializer):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
         serializer.save(author=self.request.user, review=review)

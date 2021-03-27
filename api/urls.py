@@ -19,8 +19,8 @@ router_v1.register(
     CommentViewSet,
     basename='comments'
 )
-router_v1.register('categories', CategoryViewSet, basename='category'),
-router_v1.register('genres', GenreViewSet, basename='genre'),
+router_v1.register('categories', CategoryViewSet, basename='category')
+router_v1.register('genres', GenreViewSet, basename='genre')
 
 urlpatterns = [
     path(

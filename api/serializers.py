@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Category, Genre, Title, CustomUser, Review, Comment
+from .models import CustomUser, Category, Genre, Title, CustomUser, Review, Comment
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -15,28 +15,13 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
 
 
-class TitleViewSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(many=True, read_only=True)
-    category = CategorySerializer(read_only=True)
-
-    class Meta:
-        fields = "__all__"
-        model = Title
-
-
 class TitleSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='username'
-    )
-
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'name', 'year', 'genre', 'category', 'description')
         model = Title
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     class Meta:
         fields = [
             'first_name', 'last_name', 'username', 'bio', 'email', 'role',
@@ -46,25 +31,31 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
+        many=False,
         read_only=True,
         slug_field='username'
     )
-
+    title = serializers.SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field='id'
+    )
     class Meta:
-        fields = '__all__'
         model = Review
+        fields = '__all__'
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='username'
-    )
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'author', 'title', 'text', 'created')
         model = Comment
         read_only_fields = ('title', )
+    
+    def create(self, validated_data):
+        profile_data = validated_data.pop('profile')
+        user = CustomUser.objects.create(**validated_data)
+        return user
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
