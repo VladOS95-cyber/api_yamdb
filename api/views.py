@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, permissions, viewsets, generics, status, mixins
-from .permissions import IsOwnerOrReadOnly, IsAdmin
+from .permissions import IsOwnerOrReadOnly, IsAdmin, IsAdminOrReadOnly
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import CommentSerializer, ReviewSerializer, CategorySerializer, GenreSerializer, TitleSerializer, MyTokenObtainPairSerializer, UserSerializer, GetOTPSerializer
 from .models import Category, Genre, Title, Review, CustomUser
@@ -11,6 +11,9 @@ from rest_framework.views import APIView
 import random
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.db.models import Avg
+from django_filters.rest_framework import DjangoFilterBackend
+
+from .filters import TitleFilter
 
 
 class GetOTPApiView(APIView):
@@ -125,9 +128,9 @@ class GenreViewSet(DeleteViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = (
-        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
-    )
+    permission_classes = [IsAdminOrReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TitleFilter
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -159,7 +162,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
     )
-    
+
     def perform_create(self, serializer):
         review_id = self.kwargs['review_id']
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))

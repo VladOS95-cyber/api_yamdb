@@ -36,7 +36,6 @@ class TitleSerializer(serializers.ModelSerializer):
         queryset=Category.objects.all()
     )
     rating = serializers.IntegerField(read_only=True, required=False)
-
     class Meta:
         fields = '__all__'
         model = Title
@@ -61,6 +60,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field='id'
     )
+
     class Meta:
         model = Review
         fields = '__all__'
@@ -73,7 +73,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = CustomUser.USERNAME_FIELD 
+    username_field = CustomUser.USERNAME_FIELD
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
