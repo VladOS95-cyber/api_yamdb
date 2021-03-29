@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 from rest_framework.views import APIView
 import random
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django.db.models import Avg
 
 
 class GetOTPApiView(APIView):
@@ -128,9 +129,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
     )
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
 
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
@@ -140,12 +138,20 @@ class ReviewViewSet(viewsets.ModelViewSet):
     )
 
     def perform_create(self, serializer):
+        title_id = self.kwargs['title_id']
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, title=title)
 
     def get_queryset(self):
-        review = get_object_or_404(Review, pk=self.kwargs.get('title_id'))
-        return review.comments.all()
+        title_id = self.kwargs['title_id']
+        title = get_object_or_404(Title, pk=title_id)
+        queryset = title.reviews.all()
+        return queryset
+
+    def get_rank(self, title):
+        rank = self.get_queryset().aggregate(Avg('score'))
+        title.rank = round(rank['score__avg'], 2)
+        title.save(update_fields=['rank'])
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -153,11 +159,14 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
     )
-    
+
     def perform_create(self, serializer):
+        review_id = self.kwargs['review_id']
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
         serializer.save(author=self.request.user, review=review)
 
     def get_queryset(self):
-        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
-        return review.comments.all()
+        review_id = self.kwargs['review_id']
+        review = get_object_or_404(Review, pk=review_id)
+        queryset = review.comments.all()
+        return queryset

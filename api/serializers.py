@@ -15,9 +15,30 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
 
 
+class GenreField(serializers.SlugRelatedField):
+    def to_representation(self, value):
+        return GenreSerializer(value).data
+
+
+class CategoryField(serializers.SlugRelatedField):
+    def to_representation(self, value):
+        return CategorySerializer(value).data
+
+
 class TitleSerializer(serializers.ModelSerializer):
+    genre = GenreField(
+        many=True,
+        slug_field='slug',
+        queryset=Genre.objects.all()
+    )
+    category = CategoryField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
+    rating = serializers.IntegerField(read_only=True, required=False)
+
     class Meta:
-        fields = ('id', 'name', 'year', 'genre', 'category', 'description')
+        fields = '__all__'
         model = Title
 
 
@@ -47,20 +68,13 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-
     class Meta:
-        fields = ('id', 'author', 'title', 'text', 'created')
+        fields = '__all__'
         model = Comment
-        read_only_fields = ('title', )
-
-    def create(self, validated_data):
-        profile_data = validated_data.pop('profile')
-        user = CustomUser.objects.create(**validated_data)
-        return user
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = CustomUser.USERNAME_FIELD 
+    username_field = CustomUser.USERNAME_FIELD
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
