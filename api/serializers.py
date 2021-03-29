@@ -40,6 +40,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field='id'
     )
+
     class Meta:
         model = Review
         fields = '__all__'
@@ -51,7 +52,7 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'author', 'title', 'text', 'created')
         model = Comment
         read_only_fields = ('title', )
-    
+
     def create(self, validated_data):
         profile_data = validated_data.pop('profile')
         user = CustomUser.objects.create(**validated_data)
