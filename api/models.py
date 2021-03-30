@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class CustomUser(AbstractUser):
@@ -34,7 +35,7 @@ class Title(models.Model):
     name = models.CharField(max_length=300)
     year = models.IntegerField(null=True, blank=True)
     description = models.CharField(max_length=1000, blank=True)
-    rating = models.IntegerField(blank=True, null=True)
+    rating = models.IntegerField(null=True, validators=[MinValueValidator(0, 'Не меньше 0')])
     genre = models.ManyToManyField(Genre, verbose_name='Жанр')
     category = models.ForeignKey(
         Category,
@@ -55,6 +56,13 @@ class Review(models.Model):
     created = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True
     )
+    score = models.PositiveIntegerField(
+        'Оценка', null=False,
+        validators=[MinValueValidator(1, 'Не меньше 1'),
+                    MaxValueValidator(10, 'Не больше 10')]
+    )
+    pub_date = models.DateTimeField('Дата публикации',
+                        auto_now_add=True, db_index=True)
 
 
 class Comment(models.Model):

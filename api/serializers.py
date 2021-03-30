@@ -5,13 +5,13 @@ from .models import CustomUser, Category, Genre, Title, CustomUser, Review, Comm
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ("name", "slug")
+        fields = ('name', 'slug')
         model = Category
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ("name", "slug")
+        fields = ('name', 'slug')
         model = Genre
 
 
@@ -36,6 +36,7 @@ class TitleSerializer(serializers.ModelSerializer):
         queryset=Category.objects.all()
     )
     rating = serializers.IntegerField(read_only=True, required=False)
+
     class Meta:
         fields = '__all__'
         model = Title
@@ -64,6 +65,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = '__all__'
+
+    def validate(self, data):
+        user = self.context['request'].user
+        title_id = self.context['view'].kwargs.get('title_id')
+        if Review.objects.filter(author=user, title_id=title_id).exists():
+            raise serializers.ValidationError('Вы уже оставили отзыв.')
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
