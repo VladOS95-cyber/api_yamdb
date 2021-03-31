@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, permissions, serializers, viewsets, generics, status, mixins
-from .permissions import IsOwnerOrReadOnly, IsAdmin, IsAdminOrReadOnly
+from .permissions import IsOwnerOrReadOnly, IsAdmin, IsAdminOrReadOnly, IsAuthorOrStaffOrReadOnly
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import CommentSerializer, ReviewSerializer, CategorySerializer, GenreSerializer, TitleSerializer, MyTokenObtainPairSerializer, UserSerializer, GetOTPSerializer
 from .models import Category, Genre, Title, Review, CustomUser
@@ -126,7 +126,8 @@ class GenreViewSet(DeleteViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    #queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend]
@@ -137,7 +138,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = (
-        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
+        permissions.IsAuthenticatedOrReadOnly, IsAuthorOrStaffOrReadOnly
     )
 
     def perform_create(self, serializer):
@@ -160,7 +161,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (
-        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
+        permissions.IsAuthenticatedOrReadOnly, IsAuthorOrStaffOrReadOnly
     )
 
     def perform_create(self, serializer):
