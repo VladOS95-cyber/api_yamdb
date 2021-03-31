@@ -84,7 +84,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         self.fields['password'].required = False
 
     def validate(self, attrs):
-        attrs['password'] = self.context['request'].data.get('confirmation_code')
+        attrs['password'] = self.context['request'].data.get(
+            'confirmation_code')
         return super().validate(attrs)
 
 
