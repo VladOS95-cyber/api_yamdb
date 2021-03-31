@@ -1,19 +1,25 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import filters, permissions, serializers, viewsets, generics, status, mixins
-from .permissions import IsOwnerOrReadOnly, IsAdmin, IsAdminOrReadOnly, IsAuthorOrStaffOrReadOnly
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from .serializers import CommentSerializer, ReviewSerializer, CategorySerializer, GenreSerializer, TitleSerializer, MyTokenObtainPairSerializer, UserSerializer, GetOTPSerializer
-from .models import Category, Genre, Title, Review, CustomUser, Comment
-from django.contrib.auth.hashers import make_password
-from rest_framework.response import Response
-from django.core.mail import send_mail
-from rest_framework.views import APIView
 import random
-from rest_framework_simplejwt.views import TokenObtainPairView
-from django.db.models import Avg
-from django_filters.rest_framework import DjangoFilterBackend
+
+from django.contrib.auth.hashers import make_password
+from django.core.mail import send_mail
 from django.db import models
+from django.db.models import Avg
+from django.shortcuts import get_object_or_404
+from rest_framework import (filters, generics, mixins, permissions,
+                            serializers, status, viewsets)
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
+
 from .filters import TitleFilter
+from .models import Category, Comment, CustomUser, Genre, Review, Title
+from .permissions import (IsAdmin, IsAdminOrReadOnly,
+                          IsAuthorOrStaffOrReadOnly, IsOwnerOrReadOnly)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, GetOTPSerializer,
+                          MyTokenObtainPairSerializer, ReviewSerializer,
+                          TitleSerializer, UserSerializer)
 
 
 class GetOTPApiView(APIView):
@@ -88,7 +94,9 @@ class DeleteViewSet(mixins.DestroyModelMixin,
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', ]
     lookup_field = 'slug'
@@ -127,7 +135,9 @@ class GenreViewSet(DeleteViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsAdminOrReadOnly)
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        IsAdminOrReadOnly)
     filterset_class = TitleFilter
 
     def get_queryset(self):

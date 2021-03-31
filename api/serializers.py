@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import CustomUser, Category, Genre, Title, CustomUser, Review, Comment
+
+from .models import Category, Comment, CustomUser, Genre, Review, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
