@@ -32,47 +32,37 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=300)
-    year = models.IntegerField(null=True, blank=True)
-    description = models.CharField(max_length=1000, blank=True)
-    rating = models.IntegerField(null=True, validators=[MinValueValidator(0, 'Не меньше 0')])
-    genre = models.ManyToManyField(Genre, verbose_name='Жанр')
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.SET_NULL,
-        blank=True, null=True,
-        verbose_name='Категория'
-    )
+    name = models.CharField(max_length=200)
+    year = models.IntegerField()
+    description = models.CharField(max_length=1000)
+    genre = models.ManyToManyField(Genre, related_name='titles')
+    category = models.ForeignKey(Category, related_name='titles',
+                                 on_delete=models.SET_NULL, null=True,
+                                 blank=True)
 
 
 class Review(models.Model):
-    author = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name='reviews'
-    )
-    title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='reviews'
-    )
-    text = models.TextField()
-    created = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True
-    )
-    score = models.PositiveIntegerField(
-        'Оценка', null=False,
-        validators=[MinValueValidator(1, 'Не меньше 1'),
-                    MaxValueValidator(10, 'Не больше 10')]
-    )
-    pub_date = models.DateTimeField('Дата публикации',
-                        auto_now_add=True, db_index=True)
+    text = models.CharField(max_length=500)
+    score = models.IntegerField(validators=[MinValueValidator(1),
+                                            MaxValueValidator(10)])
+    author = models.ForeignKey(CustomUser, related_name='reviews',
+                               on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, related_name='reviews',
+                              on_delete=models.CASCADE)
+    pub_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('-pub_date', )
+        unique_together = ('author', 'title')
 
 
 class Comment(models.Model):
-    author = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name='comments'
-    )
-    review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, related_name='comments'
-    )
-    text = models.TextField()
-    created = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True
-    )
+    text = models.CharField(max_length=500)
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE,
+                               related_name='comments')
+    pub_date = models.DateTimeField(auto_now_add=True)
+    review = models.ForeignKey(Review, on_delete=models.CASCADE,
+                               related_name='comments')
+
+    class Meta:
+        ordering = ('-pub_date', )
