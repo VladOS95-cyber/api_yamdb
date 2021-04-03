@@ -125,7 +125,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
@@ -136,10 +135,11 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static/'),)
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES':
         ('rest_framework.permissions.IsAuthenticatedOrReadOnly',
-        'rest_framework.permissions.BasePermission', ),
+            'rest_framework.permissions.BasePermission', ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication', ),
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
         'PAGE_SIZE': 100
 }

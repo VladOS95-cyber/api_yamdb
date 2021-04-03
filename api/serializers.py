@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import CustomUser, Category, Genre, Title, CustomUser, Review, Comment
+
+from .models import Category, Comment, CustomUser, Genre, Review, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -26,22 +27,28 @@ class CategoryField(serializers.SlugRelatedField):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreField(
-        many=True,
-        slug_field='slug',
-        queryset=Genre.objects.all()
-    )
-    category = CategoryField(
-        slug_field='slug',
-        queryset=Category.objects.all()
-    )
-    rating = serializers.IntegerField(read_only=True, required=False)
+    genre = serializers.SlugRelatedField(slug_field='slug',
+                                         queryset=Genre.objects.all(),
+                                         many=True)
+    category = serializers.SlugRelatedField(slug_field='slug',
+                                            queryset=Category.objects.all())
+    rating = serializers.FloatField(read_only=True)
+
     class Meta:
-        fields = '__all__'
         model = Title
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        data = super(TitleSerializer, self).to_representation(instance)
+        data['genre'] = GenreSerializer(
+            instance=instance.genre,
+            many=True).data
+        data['category'] = CategorySerializer(instance=instance.category).data
+        return data
 
 
 class UserSerializer(serializers.ModelSerializer):
+
     class Meta:
         fields = [
             'first_name', 'last_name', 'username', 'bio', 'email', 'role',
@@ -50,16 +57,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        many=False,
-        read_only=True,
-        slug_field='username'
-    )
-    title = serializers.SlugRelatedField(
-        many=False,
-        read_only=True,
-        slug_field='id'
-    )
+    author = serializers.SlugRelatedField(read_only=True,
+                                          slug_field='username')
+    title = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Review
@@ -67,9 +67,13 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(read_only=True,
+                                          slug_field='username')
+    review = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
-        fields = '__all__'
         model = Comment
+        fields = '__all__'
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -80,7 +84,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         self.fields['password'].required = False
 
     def validate(self, attrs):
-        attrs['password'] = self.context['request'].data.get('confirmation_code')
+        attrs['password'] = self.context['request'].data.get(
+            'confirmation_code')
         return super().validate(attrs)
 
 
