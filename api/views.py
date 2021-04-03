@@ -91,28 +91,14 @@ class DeleteViewSet(mixins.DestroyModelMixin,
     pass
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(DeleteViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly,
-        IsOwnerOrReadOnly]
+        IsAdminOrReadOnly]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', ]
     lookup_field = 'slug'
-
-    def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def update(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def get_permissions(self):
-        if self.action in ['create', 'destroy']:
-            self.permission_classes = [IsAdminOrReadOnly]
-        else:
-            self.permission_classes = [AllowAny]
-        return [permission() for permission in self.permission_classes]
 
 
 class GenreViewSet(DeleteViewSet):
