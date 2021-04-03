@@ -6,24 +6,14 @@ from .models import Category, Comment, CustomUser, Genre, Review, Title
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ("name", "slug")
+        exclude = ("id",)
         model = Category
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ("name", "slug")
+        exclude = ("id",)
         model = Genre
-
-
-class GenreField(serializers.SlugRelatedField):
-    def to_representation(self, value):
-        return GenreSerializer(value).data
-
-
-class CategoryField(serializers.SlugRelatedField):
-    def to_representation(self, value):
-        return CategorySerializer(value).data
 
 
 class TitleSerializer(serializers.ModelSerializer):
