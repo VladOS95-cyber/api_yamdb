@@ -31,6 +31,12 @@ class Category(models.Model):
 class Genre(models.Model):
     name = models.CharField(max_length=300)
     slug = models.SlugField(unique=True)
+    verbose_name='Название'
+
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+        ordering = ('name',)
 
 
 class Title(models.Model):
