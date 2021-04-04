@@ -7,6 +7,8 @@ from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import (filters, generics, permissions,
                             serializers, status, viewsets)
+
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -14,7 +16,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .filters import TitleFilter
 from .mixins import DeleteViewSet
-from .models import Category, Comment, CustomUser, Genre, Review, Title
+from .models import Category, CustomUser, Genre, Review, Title
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsAuthorOrStaffOrReadOnly, IsOwnerOrReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
@@ -56,30 +58,26 @@ class MyTokenObtainPairView(TokenObtainPairView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated, IsAdmin]
-    http_method_names = ('get', 'post', 'patch', 'delete',)
+    permission_classes = [IsAuthenticated]
     lookup_field = 'username'
 
-
-class UserViewMe(generics.RetrieveUpdateAPIView):
-
-    permission_classes = [IsAuthenticated, ]
-
-    def get(self, request):
-        current_user = get_object_or_404(
-            CustomUser, username=request.user.username
-        )
-        serializer = UserSerializer(current_user)
-        return Response(serializer.data)
-
-    def patch(self, request):
-        serializer = UserSerializer(
-            request.user, data=request.data, partial=True
-        )
-        if serializer.is_valid():
-            serializer.save()
+    @action(
+        detail=False,
+        url_path='me',
+        methods=['get, patch'],
+    )
+    def me(self, request):
+        if request.method == 'GET':
+            serializer = UserSerializer(request.user)
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = UserSerializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 class CategoryViewSet(DeleteViewSet):
@@ -153,7 +151,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
-        return Comment.objects.filter(review=review)
+        return review.comments.all()
 
     def perform_create(self, serializer):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))

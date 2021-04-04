@@ -31,7 +31,7 @@ class Category(models.Model):
 class Genre(models.Model):
     name = models.CharField(max_length=300)
     slug = models.SlugField(unique=True)
-    verbose_name='Название'
+    verbose_name = 'Название'
 
     class Meta:
         verbose_name = 'Жанр'
@@ -58,7 +58,7 @@ class Title(models.Model):
 class Review(models.Model):
     text = models.CharField(max_length=500)
     score = models.PositiveIntegerField(validators=[MinValueValidator(1),
-                                            MaxValueValidator(10)])
+                                        MaxValueValidator(10)])
     author = models.ForeignKey(CustomUser, related_name='reviews',
                                on_delete=models.CASCADE)
     title = models.ForeignKey(Title, related_name='reviews',
