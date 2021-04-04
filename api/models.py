@@ -57,7 +57,7 @@ class Title(models.Model):
 
 class Review(models.Model):
     text = models.CharField(max_length=500)
-    score = models.IntegerField(validators=[MinValueValidator(1),
+    score = models.PositiveIntegerField(validators=[MinValueValidator(1),
                                             MaxValueValidator(10)])
     author = models.ForeignKey(CustomUser, related_name='reviews',
                                on_delete=models.CASCADE)
