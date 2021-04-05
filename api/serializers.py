@@ -46,6 +46,14 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
 
 
+class AdminUserSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = CustomUser
+        fields = ('first_name', 'last_name',
+                  'username', 'bio', 'email', 'role')
+
+
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(read_only=True,
                                           slug_field='username')

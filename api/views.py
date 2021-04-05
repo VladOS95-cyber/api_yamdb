@@ -5,9 +5,8 @@ from django.core.mail import send_mail
 from django.db import models
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from rest_framework import (filters, generics, permissions,
-                            serializers, status, viewsets)
-
+from rest_framework import (filters, generics, permissions, serializers,
+                            status, viewsets)
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -19,8 +18,8 @@ from .mixins import DeleteViewSet
 from .models import Category, CustomUser, Genre, Review, Title
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsAuthorOrStaffOrReadOnly, IsOwnerOrReadOnly)
-from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, GetOTPSerializer,
+from .serializers import (AdminUserSerializer, CategorySerializer,
+                          CommentSerializer, GenreSerializer, GetOTPSerializer,
                           MyTokenObtainPairSerializer, ReviewSerializer,
                           TitleSerializer, UserSerializer)
 
@@ -57,19 +56,16 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = AdminUserSerializer
+    permission_classes = [IsAdmin]
     lookup_field = 'username'
 
-    @action(
-        detail=False,
-        url_path='me',
-        methods=['get, patch'],
-    )
+    @action(methods=('get', 'patch'), detail=False,
+            permission_classes=(IsAuthenticated,))
     def me(self, request):
         if request.method == 'GET':
             serializer = UserSerializer(request.user)
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         serializer = UserSerializer(
             request.user,
             data=request.data,
@@ -77,7 +73,7 @@ class UserViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(DeleteViewSet):

@@ -7,11 +7,6 @@ from .views import (CategoryViewSet, CommentViewSet, GenreViewSet,
                     GetOTPApiView, MyTokenObtainPairView, ReviewViewSet,
                     TitleViewSet, UserViewSet)
 
-me_views = UserViewSet.as_view({
-    'get': 'me',
-    'patch': 'me'
-})
-
 router_v1 = DefaultRouter()
 
 router_v1.register('users', UserViewSet, basename='Users')
@@ -42,6 +37,5 @@ urlpatterns = [
     ),
     path('v1/api-token-auth/', views.obtain_auth_token),
     path('auth/email/', GetOTPApiView.as_view()),
-    path('v1/users/me/', me_views, name='me_views'),
     path('v1/', include(router_v1.urls)),
 ]
