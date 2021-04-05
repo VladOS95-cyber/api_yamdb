@@ -6,13 +6,13 @@ from .models import Category, Comment, CustomUser, Genre, Review, Title
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        exclude = ("id",)
+        exclude = ('id',)
         model = Category
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
-        exclude = ("id",)
+        exclude = ('id',)
         model = Genre
 
 

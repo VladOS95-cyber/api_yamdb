@@ -17,11 +17,14 @@ from .filters import TitleFilter
 from .mixins import DeleteViewSet
 from .models import Category, CustomUser, Genre, Review, Title
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
-                          IsAuthorOrStaffOrReadOnly, IsOwnerOrReadOnly)
+                          IsOwnerOrReadOnly)
 from .serializers import (AdminUserSerializer, CategorySerializer,
                           CommentSerializer, GenreSerializer, GetOTPSerializer,
                           MyTokenObtainPairSerializer, ReviewSerializer,
                           TitleSerializer, UserSerializer)
+
+
+EMAIL_ADDRESS_EXAMPLE = 'from@example.com'
 
 
 class GetOTPApiView(APIView):
@@ -35,7 +38,7 @@ class GetOTPApiView(APIView):
         send_mail(
             'Регистрация на Yamdb!',
             f'Ваш код регистрации - {code}',
-            'from@example.com',
+            '{EMAIL_ADDRESS_EXAMPLE}',
             [email]
         )
         user, created = CustomUser.objects.get_or_create(
@@ -143,7 +146,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (
-        permissions.IsAuthenticatedOrReadOnly, IsAuthorOrStaffOrReadOnly)
+        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
 
     def get_queryset(self):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))

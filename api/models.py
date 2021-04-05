@@ -5,21 +5,19 @@ from django.db import models
 from .validators import custom_year_validator
 
 
+class Roles(models.TextChoices):
+    USER = 'user', 'Пользователь'
+    MODERATOR = 'moderator', 'Модератор'
+    ADMIN = 'admin', 'Администратор'
+
+
 class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
-    USER_ROLES_CHOICES = [
-        ('user', 'User'),
-        ('moderator', 'Moderator'),
-        ('admin', 'Admin'),
-    ]
 
     email = models.EmailField(unique=True)
-    role = models.CharField(
-        max_length=20,
-        choices=USER_ROLES_CHOICES,
-        default='user',
-    )
+    role = models.CharField('Роль', max_length=10, choices=Roles.choices,
+                            default=Roles.USER)
     bio = models.TextField(blank=True, null=True)
 
 
